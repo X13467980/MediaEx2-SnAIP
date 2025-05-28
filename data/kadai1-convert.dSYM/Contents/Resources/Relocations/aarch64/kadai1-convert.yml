@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/x/Downloads/jikken2/data/kadai1-convert'
+relocations:     []
+...
