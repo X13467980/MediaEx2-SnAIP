@@ -1,0 +1,33 @@
+# macOS system files
+.DS_Store
+
+# Node.js dependencies
+node_modules/
+
+# Python virtual environments
+venv/
+.env/
+
+# Logs
+*.log
+
+# Compiled files
+*.pyc
+*.class
+*.o
+*.out
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+Thumbs.db
+
+# Backup files
+*~
+*.swp
+
+# Build directories
+dist/
+build/
