@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h>
 
+
 #define SAMPLE_RATE 16000 // サンプリング周波数を16kHzに設定
 #define N 1024            // データの長さを1024サンプルに設定
 #define K 10              // 周波数成分のインデックスを10に設定
@@ -52,19 +53,54 @@ void IDFT(int size, double *Xr, double *Xi) // 逆離散フーリエ変換（IDF
     free(xi);                              // メモリ解放
 }
 
-void write_txt(const char *filename, double *data) // テキストファイルにデータを書き込む関数
+void write_txt(const char *filename, double *data)
 {
-    FILE *fp = fopen(filename, "w"); // ファイルを開く
-    if (!fp)                         // ファイルオープンに失敗した場合
+    FILE *fp = fopen(filename, "w");
+    if (!fp)
     {
-        perror("fopen"); // エラーメッセージを表示
+        perror("fopen");
         exit(1);
     }
-    for (int i = 0; i < N; ++i) // データの数だけループ
+
+    for (int i = 0; i < N; ++i)
     {
-        fprintf(fp, "%.6f\n", data[i]); // データを書き込む
+        double freq_khz = (double)i * SAMPLE_RATE / N / 1000.0; // 周波数[kHz]
+        fprintf(fp, "%.6f\t%.6f\n", freq_khz, data[i]); // 2列出力: 周波数[kHz], 値
     }
-    fclose(fp); // ファイルを閉じる
+
+    fclose(fp);
+}
+
+void write_txt_time(const char *filename, double *data)
+{
+    FILE *fp = fopen(filename, "w");
+    if (!fp)
+    {
+        perror("fopen");
+        exit(1);
+    }
+
+    for (int i = 0; i < N; ++i)
+    {
+        fprintf(fp, "%d\t%.6f\n", i, data[i]); // 時間インデックスと値
+    }
+
+    fclose(fp);
+}
+
+void write_raw(const char *filename, double *data) {
+    FILE *fp = fopen(filename, "wb");
+    if (!fp) {
+        perror("fopen");
+        exit(1);
+    }
+
+    for (int i = 0; i < N; ++i) {
+        int16_t sample = (int16_t)(data[i] * 32767.0); // -1〜1を16bit整数にスケーリング
+        fwrite(&sample, sizeof(int16_t), 1, fp);
+    }
+
+    fclose(fp);
 }
 
 int main()
@@ -85,8 +121,10 @@ int main()
     DFT(N, sin_r, sin_i); // 正弦波のDFTを計算
     DFT(N, cos_r, cos_i); // 余弦波のDFTを計算
 
-    write_txt("sin.txt", sin_wave); // 元の正弦波の波形を保存
-    write_txt("cos.txt", cos_wave); // 元の余弦波の波形を保存
+    write_txt_time("sin.txt", sin_wave); // 元の正弦波の波形を保存
+    write_txt_time("cos.txt", cos_wave); // 元の余弦波の波形を保存
+    write_raw("sin.raw", sin_wave); // 正弦波をRAW形式で保存
+    write_raw("cos.raw", cos_wave); // 余弦波をRAW形式で保存
     write_txt("sin_real.txt", sin_r); // 正弦波の実部をファイルに書き込む
     write_txt("sin_imag.txt", sin_i); // 正弦波の虚部をファイルに書き込む
     write_txt("cos_real.txt", cos_r); // 余弦波の実部をファイルに書き込む
@@ -95,11 +133,11 @@ int main()
     IDFT(N, sin_r, sin_i); // 正弦波の逆DFTを計算
     IDFT(N, cos_r, cos_i); // 余弦波の逆DFTを計算
 
-    write_txt("sin_idft.txt", sin_r); // 正弦波の逆DFTの結果をファイルに書き込む
-    write_txt("cos_idft.txt", cos_r); // 余弦波の逆DFTの結果をファイルに書き込む
+    write_txt_time("sin_idft.txt", sin_r); // 正弦波の逆DFTの結果をファイルに書き込む
+    write_txt_time("cos_idft.txt", cos_r); // 余弦波の逆DFTの結果をファイルに書き込む
 
-    write_txt("sin_idft.txt", sin_r); // 正弦波の逆DFTの結果をファイルに書き込む
-    write_txt("cos_idft.txt", cos_r); // 余弦波の逆DFTの結果をファイルに書き込む
+    write_txt_time("sin_idft.txt", sin_r); // 正弦波の逆DFTの結果をファイルに書き込む
+    write_txt_time("cos_idft.txt", cos_r); // 余弦波の逆DFTの結果をファイルに書き込む
 
     double sin_power[N], cos_power[N];                 // パワーを格納する配列を初期化
     double sin_time_power = 0.0, cos_time_power = 0.0; // 時間平均パワーを格納する変数を初期化
